@@ -1,0 +1,5 @@
+{
+  "name": "Nebula Blog",
+  "description": "A futuristic, pure-frontend personal blog with AI-powered features, markdown editing, and glassmorphism aesthetics. Data is persisted locally.",
+  "requestFramePermissions": []
+}
