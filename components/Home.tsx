@@ -204,12 +204,12 @@ const Home: React.FC = () => {
               </div>
 
               <div className="flex justify-center gap-4">
-                 <button className="p-2 rounded-full bg-stone-50 text-textMuted hover:bg-stone-800 hover:text-white transition-all">
+                 <a href="https://github.com/vue-rookie" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-stone-50 text-textMuted hover:bg-stone-800 hover:text-white transition-all">
                     <Github size={18} />
-                 </button>
-                 <button className="p-2 rounded-full bg-stone-50 text-textMuted hover:bg-primary hover:text-white transition-all">
+                 </a>
+                 <a href="mailto:malqqin@163.com" className="p-2 rounded-full bg-stone-50 text-textMuted hover:bg-primary hover:text-white transition-all">
                     <Mail size={18} />
-                 </button>
+                 </a>
               </div>
            </motion.div>
 

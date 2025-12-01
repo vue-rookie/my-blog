@@ -10,6 +10,7 @@ import { Heart, MessageCircle, Share2, Bot, Trash2, ArrowLeft, Clock, Edit } fro
 import { getPostById, toggleLike, addComment, deletePost } from '@/src/services/storageService';
 import { generateSummary } from '@/src/services/geminiService';
 import { Post } from '@/src/types';
+import { useAuth } from '@/src/context/AuthContext';
 
 interface PostDetailProps {
   id: string;
@@ -23,7 +24,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // You can implement auth logic here
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     if (id) {
