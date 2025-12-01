@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getPosts } from '../services/storageService';
-import { Post, Category, CATEGORIES } from '../types';
+import { Post, Category, CATEGORIES } from '@/src/types';
 import { MessageSquare, ArrowRight, Hash, Search, Github, Mail, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -105,7 +105,6 @@ const Home: React.FC = () => {
            {/* Post List */}
            <motion.div 
              variants={container}
-             initial="hidden"
              animate="show"
              className="space-y-6"
            >
@@ -113,7 +112,7 @@ const Home: React.FC = () => {
                filteredPosts.map(post => (
                  <motion.div key={post.id} variants={item}>
                    <Link to={`/post/${post.id}`} className="block group">
-                     <article className="p-0 md:p-6 -mx-0 md:-mx-6 rounded-2xl hover:bg-white hover:shadow-warm transition-all duration-300 border border-transparent hover:border-stone-100 grid md:grid-cols-[1fr,200px] gap-6 items-start">
+                     <article className="p-0 md:p-6  md:-mx-6 rounded-2xl hover:bg-white hover:shadow-warm transition-all duration-300 border border-transparent hover:border-stone-100 grid md:grid-cols-[1fr,200px] gap-6 items-start">
                        
                        {/* Text Content */}
                        <div className="flex flex-col gap-4">

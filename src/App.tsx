@@ -1,11 +1,12 @@
 import React from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { Layout } from '@/src/components/Layout';
-import Home from '@/src/pages/Home';
-import PostDetail from '@/src/pages/PostDetail';
-import Editor from '@/src/pages/Editor';
-
+import { AuthProvider } from './context/AuthContext';
+import { Layout } from './components/Layout';
+import Home from './pages/Home';
+import PostDetail from './pages/PostDetail';
+import Editor from './pages/Editor';
+import './index.css';
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -24,11 +25,13 @@ const AnimatedRoutes = () => {
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
-      <Layout>
-        <AnimatedRoutes />
-      </Layout>
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <Layout>
+          <AnimatedRoutes />
+        </Layout>
+      </HashRouter>
+    </AuthProvider>
   );
 };
 

@@ -5,34 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>秦强的博客</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              background: '#F5F3EF', // Claude Warm Beige
-              surface: '#FFFFFF',    // Pure White
-              primary: '#DA7756',    // Terracotta / Warm Orange (Claude Accentish)
-              secondary: '#3F3F46',  // Dark Zinc / Charcoal
-              textMain: '#2D2D2D',   // Soft Black
-              textMuted: '#6B6B6B',  // Warm Gray
-              accent: '#D97757',     // Burnt Orange
-            },
-            fontFamily: {
-              sans: ['Inter', 'system-ui', 'sans-serif'],
-              serif: ['Merriweather', 'Georgia', 'serif'], // Added Serif for Claude look
-              mono: ['Fira Code', 'monospace'],
-            },
-            boxShadow: {
-              'warm': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-              'card': '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)',
-            }
-          },
-        },
-      }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
     <style>
       body {
@@ -63,23 +35,9 @@
         border-left-color: #DA7756;
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
-    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.24",
-    "date-fns": "https://aistudiocdn.com/date-fns@^4.1.0"
-  }
-}
-</script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
