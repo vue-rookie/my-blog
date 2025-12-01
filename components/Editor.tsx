@@ -1,34 +1,56 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
-import { savePost, getPostById } from '../services/storageService';
-import { generateTitleAndTags } from '../services/geminiService';
-import { CATEGORIES, Category, Post } from '../types';
-import { 
-  Save, Eye, Wand2, 
-  Undo, Redo, 
-  Bold, Italic, Underline, Strikethrough, 
-  List, ListOrdered, 
+import { savePost, getPostById } from '@/src/services/storageService';
+import { generateTitleAndTags } from '@/src/services/geminiService';
+import { CATEGORIES, Category, Post } from '@/src/types';
+import {
+  Save, Eye, Wand2,
+  Undo, Redo,
+  Bold, Italic, Underline, Strikethrough,
+  List, ListOrdered,
   Quote, Code, Link as LinkIcon, Image as ImageIcon,
   Columns, LayoutPanelLeft, ImagePlus, RefreshCw
 } from 'lucide-react';
 
-const Editor: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+interface EditorProps {
+  id?: string;
+}
+
+const Editor: React.FC<EditorProps> = ({ id }) => {
+  const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load existing data if editing
-  const existingPost = id ? getPostById(id) : undefined;
+  const [title, setTitle] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [content, setContent] = useState('');
+  const [coverImage, setCoverImage] = useState('');
+  const [category, setCategory] = useState<Category>('技术');
+  const [tags, setTags] = useState<string>('');
+  const [existingPost, setExistingPost] = useState<Post | undefined>(undefined);
 
-  const [title, setTitle] = useState(existingPost?.title || '');
-  const [excerpt, setExcerpt] = useState(existingPost?.excerpt || '');
-  const [content, setContent] = useState(existingPost?.content || '');
-  const [coverImage, setCoverImage] = useState(existingPost?.coverImage || '');
-  const [category, setCategory] = useState<Category>(existingPost?.category as Category || '技术');
-  const [tags, setTags] = useState<string>(existingPost?.tags.join(', ') || '');
-  
+  // Load existing data if editing
+  useEffect(() => {
+    if (id) {
+      const loadPost = async () => {
+        const post = await getPostById(id);
+        if (post) {
+          setExistingPost(post);
+          setTitle(post.title);
+          setExcerpt(post.excerpt);
+          setContent(post.content);
+          setCoverImage(post.coverImage || '');
+          setCategory(post.category as Category);
+          setTags(post.tags.join(', '));
+        }
+      };
+      loadPost();
+    }
+  }, [id]);
+
   // Modes: 'edit' (only editor), 'preview' (only preview), 'split' (side by side)
   const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('split');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -43,16 +65,16 @@ const Editor: React.FC = () => {
     window.addEventListener('resize', handleResize);
     handleResize(); // Initial check
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [viewMode]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !content) {
       alert('标题和内容不能为空！');
       return;
     }
 
     const newPost: Post = {
-      id: existingPost?.id || crypto.randomUUID(),
+      ...(existingPost?.id && { id: existingPost.id }),
       title,
       excerpt: excerpt || content.substring(0, 100) + '...',
       content,
@@ -64,15 +86,15 @@ const Editor: React.FC = () => {
       likes: existingPost?.likes || 0,
       views: existingPost?.views || 0,
       comments: existingPost?.comments || []
-    };
+    } as Post;
 
-    savePost(newPost);
-    navigate('/');
+    await savePost(newPost);
+    router.push('/');
   };
 
   const handleMagic = async () => {
     if (content.length < 20) {
-      alert("请多写一点内容，以便 AI 更好地辅助你！");
+      alert("请多写一点内容,以便 AI 更好地辅助你!");
       return;
     }
     setIsGenerating(true);
@@ -98,7 +120,7 @@ const Editor: React.FC = () => {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
-    
+
     const before = text.substring(0, start);
     const selection = text.substring(start, end);
     const after = text.substring(end);
@@ -140,7 +162,7 @@ const Editor: React.FC = () => {
             <Wand2 size={16} className={isGenerating ? "animate-spin" : ""} />
             {isGenerating ? "生成中..." : "AI 助手"}
           </button>
-          
+
           <button
             onClick={handleSave}
             className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary text-white hover:bg-accent transition-colors text-sm font-bold shadow-md shadow-orange-200"
@@ -153,7 +175,7 @@ const Editor: React.FC = () => {
 
       {/* Main Grid */}
       <div className="space-y-6">
-        
+
         {/* Title Input */}
         <input
           type="text"
@@ -165,11 +187,11 @@ const Editor: React.FC = () => {
 
         {/* Settings Bar */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          
+
           {/* Category & Tags */}
           <div className="md:col-span-8 flex flex-col md:flex-row gap-4">
              <div className="relative min-w-[140px]">
-                <select 
+                <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as Category)}
                     className="w-full appearance-none bg-white border border-stone-200 rounded-lg pl-4 pr-10 py-3 text-sm text-textMain focus:outline-none focus:border-primary shadow-sm cursor-pointer"
@@ -180,7 +202,7 @@ const Editor: React.FC = () => {
                   <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
              </div>
-             
+
              <input
                type="text"
                placeholder="标签 (逗号分隔)"
@@ -196,16 +218,16 @@ const Editor: React.FC = () => {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
                 <ImagePlus size={16} />
               </div>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="封面图片链接..."
                 value={coverImage}
                 onChange={(e) => setCoverImage(e.target.value)}
                 className="w-full pl-9 pr-3 py-3 bg-white border border-stone-200 rounded-lg text-sm text-textMain focus:outline-none focus:border-primary shadow-sm"
               />
             </div>
-            <button 
-              onClick={randomCover} 
+            <button
+              onClick={randomCover}
               className="px-3 py-2 bg-white border border-stone-200 rounded-lg text-stone-500 hover:text-primary hover:border-primary transition-colors"
               title="随机封面"
             >
@@ -234,15 +256,15 @@ const Editor: React.FC = () => {
 
         {/* Editor Main Container */}
         <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col relative">
-          
+
           {/* Toolbar */}
           <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-stone-100 p-2 flex flex-wrap items-center justify-between gap-2 select-none">
-            
+
             <div className="flex items-center gap-1 flex-wrap">
                {/* Headings */}
                <button onClick={() => insertFormat('# ')} className="p-2 text-stone-600 hover:bg-stone-100 rounded-lg font-serif font-bold text-sm w-9 transition-colors">H1</button>
                <button onClick={() => insertFormat('## ')} className="p-2 text-stone-600 hover:bg-stone-100 rounded-lg font-serif font-bold text-sm w-9 transition-colors">H2</button>
-               
+
                <div className="w-px h-5 bg-stone-200 mx-1" />
 
                {/* Formatting */}
@@ -262,21 +284,21 @@ const Editor: React.FC = () => {
 
             {/* View Mode Switcher */}
             <div className="flex items-center bg-stone-100 rounded-lg p-1">
-              <button 
+              <button
                 onClick={() => setViewMode('edit')}
                 className={`p-1.5 rounded-md transition-all ${viewMode === 'edit' ? 'bg-white text-primary shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
                 title="仅编辑"
               >
                 <LayoutPanelLeft size={16} />
               </button>
-              <button 
+              <button
                 onClick={() => setViewMode('split')}
                 className={`p-1.5 rounded-md transition-all hidden lg:block ${viewMode === 'split' ? 'bg-white text-primary shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
                 title="分屏预览"
               >
                 <Columns size={16} />
               </button>
-              <button 
+              <button
                 onClick={() => setViewMode('preview')}
                 className={`p-1.5 rounded-md transition-all ${viewMode === 'preview' ? 'bg-white text-primary shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
                 title="仅预览"

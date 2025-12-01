@@ -7,7 +7,7 @@ export interface Comment {
 }
 
 export interface Post {
-  id: string;
+  id?: string;
   title: string;
   excerpt: string;
   content: string; // Markdown content

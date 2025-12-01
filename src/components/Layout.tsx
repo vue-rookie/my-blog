@@ -1,17 +1,20 @@
+"use client";
+
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { PenTool, Home, Lock, Unlock, X, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
+  const pathname = usePathname();
   const { isAdmin, login, logout } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(false);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => pathname === path;
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,14 +33,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
         <div className="flex items-center gap-1 px-2 py-2 bg-surface border border-gray-200/60 rounded-full shadow-warm">
           
-          <Link to="/" className={`p-3 rounded-full transition-all duration-300 ${isActive('/') ? 'bg-primary text-white' : 'hover:bg-gray-100 text-textMuted hover:text-textMain'}`}>
+          <Link href="/" className={`p-3 rounded-full transition-all duration-300 ${isActive('/') ? 'bg-primary text-white' : 'hover:bg-gray-100 text-textMuted hover:text-textMain'}`}>
             <Home size={22} />
           </Link>
-          
+
           {isAdmin && (
             <>
             <div className="w-px h-5 bg-gray-200 mx-1"></div>
-            <Link to="/write" className={`flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 ${isActive('/write') ? 'bg-secondary text-white font-medium' : 'hover:bg-gray-100 text-textMuted hover:text-textMain'}`}>
+            <Link href="/write" className={`flex items-center gap-2 px-4 py-3 rounded-full transition-all duration-300 ${isActive('/write') ? 'bg-secondary text-white font-medium' : 'hover:bg-gray-100 text-textMuted hover:text-textMain'}`}>
               <PenTool size={18} />
               <span className={`${isActive('/write') ? 'block' : 'hidden md:block'} text-sm`}>写作</span>
             </Link>

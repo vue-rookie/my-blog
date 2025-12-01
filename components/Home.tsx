@@ -1,7 +1,9 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { getPosts } from '../services/storageService';
+import { getPosts } from '@/src/services/storageService';
 import { Post, Category, CATEGORIES } from '@/src/types';
 import { MessageSquare, ArrowRight, Hash, Search, Github, Mail, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
@@ -12,12 +14,16 @@ const Home: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    setPosts(getPosts());
+    const fetchPosts = async () => {
+      const fetchedPosts = await getPosts();
+      setPosts(fetchedPosts);
+    };
+    fetchPosts();
   }, []);
 
   const filteredPosts = posts.filter(p => {
     const matchesCategory = selectedCategory === '全部' || p.category === selectedCategory;
-    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
@@ -42,16 +48,16 @@ const Home: React.FC = () => {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="space-y-12"
     >
       {/* Header Area */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-10 pb-6 border-b border-stone-200">
         <div>
-           <motion.h1 
+           <motion.h1
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="text-4xl md:text-5xl font-serif font-bold text-textMain tracking-tight mb-3"
@@ -68,9 +74,9 @@ const Home: React.FC = () => {
            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
              <Search size={18} className="text-gray-400" />
            </div>
-           <input 
-             type="text" 
-             placeholder="搜索文章..." 
+           <input
+             type="text"
+             placeholder="搜索文章..."
              className="block w-full pl-11 pr-4 py-3 bg-white border border-stone-200 rounded-xl leading-5 text-textMain placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary transition-all shadow-sm"
              value={searchQuery}
              onChange={(e) => setSearchQuery(e.target.value)}
@@ -79,10 +85,10 @@ const Home: React.FC = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        
+
         {/* Main Content Column */}
         <div className="lg:col-span-8 space-y-8">
-           
+
            {/* Category Filter */}
            <div className="flex flex-wrap gap-2 pb-2">
              <button
@@ -103,7 +109,7 @@ const Home: React.FC = () => {
            </div>
 
            {/* Post List */}
-           <motion.div 
+           <motion.div
              variants={container}
              animate="show"
              className="space-y-6"
@@ -111,9 +117,9 @@ const Home: React.FC = () => {
              {filteredPosts.length > 0 ? (
                filteredPosts.map(post => (
                  <motion.div key={post.id} variants={item}>
-                   <Link to={`/post/${post.id}`} className="block group">
+                   <Link href={`/post/${post.id}`} className="block group">
                      <article className="p-0 md:p-6  md:-mx-6 rounded-2xl hover:bg-white hover:shadow-warm transition-all duration-300 border border-transparent hover:border-stone-100 grid md:grid-cols-[1fr,200px] gap-6 items-start">
-                       
+
                        {/* Text Content */}
                        <div className="flex flex-col gap-4">
                            <div className="flex items-center gap-3">
@@ -132,7 +138,7 @@ const Home: React.FC = () => {
                            <h2 className="text-2xl font-serif font-bold text-textMain group-hover:text-primary transition-colors leading-tight">
                              {post.title}
                            </h2>
-                           
+
                            <p className="text-textMuted text-base leading-relaxed line-clamp-2">
                              {post.excerpt}
                            </p>
@@ -169,34 +175,34 @@ const Home: React.FC = () => {
 
         {/* Sidebar Column */}
         <div className="lg:col-span-4 space-y-8">
-           
+
            {/* Profile Widget - Card Style */}
-           <motion.div 
+           <motion.div
              initial={{ opacity: 0, x: 10 }}
              animate={{ opacity: 1, x: 0 }}
              transition={{ delay: 0.2 }}
              className="bg-white p-8 rounded-2xl shadow-card border border-stone-100 text-center"
            >
-              <div className="w-24 h-24 mx-auto bg-stone-100 rounded-full p-1 mb-4">
-                 <img 
-                   src="https://api.dicebear.com/7.x/notionists/svg?seed=Qin" 
-                   alt="Profile" 
-                   className="w-full h-full rounded-full object-cover" 
+              <div className="w-24 h-24 mx-auto rounded-full shadow-lg overflow-hidden">
+                 <img
+                   src="https://timebackward.oss-cn-beijing.aliyuncs.com/blog/Profile.png"
+                   alt="Profile"
+                   className="w-full h-full object-cover"
                  />
               </div>
               <h3 className="text-xl font-serif font-bold text-textMain mb-1">秦强</h3>
               <p className="text-sm text-primary font-medium mb-4">前端开发工程师</p>
-              
+
               <div className="text-sm text-textMuted space-y-2 mb-6 text-left bg-background p-4 rounded-xl">
                  <div className="flex items-start gap-2">
                     <MapPin size={16} className="mt-0.5 shrink-0" />
                     <span>山西至简能源科技有限公司</span>
                  </div>
                  <p className="text-xs leading-relaxed pt-2 border-t border-stone-200/60 mt-2">
-                   热爱技术，追求至简。专注于 React 生态与现代化前端工程体验。
+                   热爱技术，追求至简。专注于 Vue、React 生态与现代化前端工程体验。
                  </p>
               </div>
-              
+
               <div className="flex justify-center gap-4">
                  <button className="p-2 rounded-full bg-stone-50 text-textMuted hover:bg-stone-800 hover:text-white transition-all">
                     <Github size={18} />
@@ -208,7 +214,7 @@ const Home: React.FC = () => {
            </motion.div>
 
            {/* Tags Cloud Widget */}
-           <motion.div 
+           <motion.div
              initial={{ opacity: 0, x: 10 }}
              animate={{ opacity: 1, x: 0 }}
              transition={{ delay: 0.3 }}

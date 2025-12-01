@@ -1,28 +1,37 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { format } from 'date-fns';
 import { Heart, MessageCircle, Share2, Bot, Trash2, ArrowLeft, Clock, Edit } from 'lucide-react';
-import { getPostById, toggleLike, addComment, deletePost } from '../services/storageService';
-import { generateSummary } from '../services/geminiService';
-import { Post } from '../types';
-import { useAuth } from '../context/AuthContext';
+import { getPostById, toggleLike, addComment, deletePost } from '@/src/services/storageService';
+import { generateSummary } from '@/src/services/geminiService';
+import { Post } from '@/src/types';
 
-const PostDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+interface PostDetailProps {
+  id: string;
+}
+
+const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
+  const router = useRouter();
   const [post, setPost] = useState<Post | undefined>(undefined);
   const [commentText, setCommentText] = useState('');
+  const [commentAuthor, setCommentAuthor] = useState('');
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false); // You can implement auth logic here
 
   useEffect(() => {
     if (id) {
-      const data = getPostById(id);
-      if (data) setPost(data);
+      const fetchPost = async () => {
+        const data = await getPostById(id);
+        if (data) setPost(data);
+      };
+      fetchPost();
     }
   }, [id]);
 
@@ -40,9 +49,9 @@ const PostDetail: React.FC = () => {
     return Math.ceil(words / 400);
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (id) {
-      const updated = toggleLike(id);
+      const updated = await toggleLike(id);
       if (updated) {
         setPost(updated);
         setHasLiked(true);
@@ -50,25 +59,28 @@ const PostDetail: React.FC = () => {
     }
   };
 
-  const handleComment = (e: React.FormEvent) => {
+  const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim() || !id) return;
-    const updated = addComment(id, commentText);
+    if (!commentText.trim() || !commentAuthor.trim() || !id) return;
+    const updated = await addComment(id, commentText, commentAuthor);
     if (updated) {
       setPost(updated);
       setCommentText('');
+      setCommentAuthor('');
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm("确定要删除这篇文章吗？")) {
-      deletePost(post.id);
-      navigate('/');
+      if (post.id) {
+        await deletePost(post.id);
+        router.push('/');
+      }
     }
   }
 
   const handleEdit = () => {
-    navigate(`/edit/${post.id}`);
+    router.push(`/edit/${post.id}`);
   }
 
   const handleAISummary = async () => {
@@ -79,13 +91,13 @@ const PostDetail: React.FC = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       className="max-w-3xl mx-auto"
     >
-      <Link to="/" className="inline-flex items-center gap-2 text-textMuted hover:text-primary mb-8 transition-colors text-sm font-medium">
+      <Link href="/" className="inline-flex items-center gap-2 text-textMuted hover:text-primary mb-8 transition-colors text-sm font-medium">
         <ArrowLeft size={16} /> 返回首页
       </Link>
 
@@ -120,11 +132,11 @@ const PostDetail: React.FC = () => {
 
       {/* Main Content Card - Paper Style */}
       <div className="bg-surface rounded-none md:rounded-3xl p-0 md:p-12 md:shadow-card md:border md:border-stone-100">
-        
+
         {/* Actions Bar */}
         {isAdmin && (
           <div className="flex justify-between items-center mb-8 pb-6 border-b border-stone-100">
-             <button 
+             <button
                onClick={handleAISummary}
                disabled={loadingAi}
                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-50 text-primary hover:bg-orange-100 transition-colors text-sm font-bold disabled:opacity-50"
@@ -146,7 +158,7 @@ const PostDetail: React.FC = () => {
 
         {/* AI Summary Result */}
         {aiSummary && (
-          <motion.div 
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             className="mb-10 p-6 rounded-xl bg-background border border-stone-200 text-textMain"
@@ -166,7 +178,7 @@ const PostDetail: React.FC = () => {
         {/* Engagement Footer */}
         <div className="mt-16 pt-8 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex gap-4">
-            <button 
+            <button
               onClick={handleLike}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-full transition-all duration-300 ${hasLiked ? 'bg-primary text-white shadow-md shadow-orange-200' : 'bg-background hover:bg-stone-100 text-textMuted border border-stone-200'}`}
             >
@@ -190,30 +202,39 @@ const PostDetail: React.FC = () => {
       <div className="mt-16 max-w-2xl mx-auto pb-12">
         <h3 className="text-xl font-serif font-bold mb-8 flex items-center gap-3 text-textMain">
           <div className="p-1.5 bg-background rounded-lg text-textMuted">
-            <MessageCircle size={20} /> 
+            <MessageCircle size={20} />
           </div>
           评论 ({post.comments.length})
         </h3>
 
-        <form onSubmit={handleComment} className="mb-10 relative group">
-          <textarea
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="写下你的想法..."
-            className="w-full bg-white border border-stone-200 rounded-xl p-4 text-textMain focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all min-h-[120px] resize-none placeholder:text-gray-300 shadow-sm"
+        <form onSubmit={handleComment} className="mb-10 space-y-4">
+          <input
+            type="text"
+            value={commentAuthor}
+            onChange={(e) => setCommentAuthor(e.target.value)}
+            placeholder="您的昵称..."
+            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-textMain focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-gray-300 shadow-sm"
           />
-          <button 
-            type="submit"
-            disabled={!commentText.trim()}
-            className="absolute bottom-4 right-4 px-5 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
-          >
-            发表评论
-          </button>
+          <div className="relative group">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="写下您的想法..."
+              className="w-full bg-white border border-stone-200 rounded-xl p-4 text-textMain focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all min-h-[120px] resize-none placeholder:text-gray-300 shadow-sm"
+            />
+            <button
+              type="submit"
+              disabled={!commentText.trim() || !commentAuthor.trim()}
+              className="absolute bottom-4 right-4 px-5 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+            >
+              发表评论
+            </button>
+          </div>
         </form>
 
         <div className="space-y-8">
           {post.comments.map(comment => (
-            <motion.div 
+            <motion.div
               key={comment.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
