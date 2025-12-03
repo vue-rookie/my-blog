@@ -4,13 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { format } from 'date-fns';
 import { Heart, MessageCircle, Share2, Bot, Trash2, ArrowLeft, Clock, Edit } from 'lucide-react';
 import { getPostById, toggleLike, addComment, deletePost } from '@/src/services/storageService';
 import { generateSummary } from '@/src/services/geminiService';
 import { Post } from '@/src/types';
 import { useAuth } from '@/src/context/AuthContext';
+import rehypeHighlight from "rehype-highlight";
 
 interface PostDetailProps {
   id: string;
@@ -172,8 +174,21 @@ const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
         )}
 
         {/* Markdown Content */}
-        <div className="prose prose-lg prose-stone max-w-none prose-headings:font-serif prose-headings:font-bold prose-headings:text-textMain prose-p:text-textMuted prose-p:leading-8 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-primary prose-code:bg-orange-50/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-medium prose-pre:bg-secondary prose-pre:text-stone-50 prose-pre:rounded-xl prose-img:rounded-xl prose-img:shadow-sm prose-blockquote:border-l-primary prose-blockquote:bg-background prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-textMuted">
-          <ReactMarkdown>{post.content}</ReactMarkdown>
+        <div className=" prose max-w-none markdown  dark:bg-black bg-white">
+          <Markdown remarkPlugins={[remarkGfm]}   rehypePlugins={[rehypeHighlight]}      components={{
+          pre({ node, className, children, ...props }) {
+            return (
+              <pre
+                className={`${className ? className : ""} rounded-md p-4`}
+                {...props}
+              >
+                {children}
+              </pre>
+            );
+          }
+        }}>
+            {post.content}
+          </Markdown>
         </div>
 
         {/* Engagement Footer */}

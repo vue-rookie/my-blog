@@ -21,7 +21,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body className="bg-white dark:bg-black">
         <AuthProvider>
           <Layout>{children}</Layout>
         </AuthProvider>

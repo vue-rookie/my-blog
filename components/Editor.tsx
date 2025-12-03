@@ -3,10 +3,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { savePost, getPostById } from '@/src/services/storageService';
 import { generateTitleAndTags } from '@/src/services/geminiService';
 import { CATEGORIES, Category, Post } from '@/src/types';
+import rehypeHighlight from "rehype-highlight";
 import {
   Save, Eye, Wand2,
   Undo, Redo,
@@ -66,6 +68,15 @@ const Editor: React.FC<EditorProps> = ({ id }) => {
     handleResize(); // Initial check
     return () => window.removeEventListener('resize', handleResize);
   }, [viewMode]);
+
+  // Auto-expand textarea height based on content
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+  }, [content]);
 
   const handleSave = async () => {
     if (!title || !content) {
@@ -255,7 +266,7 @@ const Editor: React.FC<EditorProps> = ({ id }) => {
         />
 
         {/* Editor Main Container */}
-        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col relative">
+        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden flex flex-col relative">
 
           {/* Toolbar */}
           <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-stone-100 p-2 flex flex-wrap items-center justify-between gap-2 select-none">
@@ -309,15 +320,15 @@ const Editor: React.FC<EditorProps> = ({ id }) => {
           </div>
 
           {/* Editor/Preview Area */}
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex flex-col lg:flex-row">
             {/* Left: Textarea */}
             {(viewMode === 'edit' || viewMode === 'split') && (
-              <div className={`h-full flex flex-col ${viewMode === 'split' ? 'w-1/2 border-r border-stone-200' : 'w-full'}`}>
+              <div className={`flex flex-col ${viewMode === 'split' ? 'lg:w-1/2 border-b lg:border-b-0 lg:border-r border-stone-200' : 'w-full'}`}>
                 <textarea
                   ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="flex-1 w-full p-6 text-base leading-relaxed text-textMain font-mono focus:outline-none resize-none bg-stone-50/30 placeholder:text-stone-300"
+                  className="w-full p-6 text-base leading-relaxed text-textMain font-mono focus:outline-none resize-none bg-stone-50/30 placeholder:text-stone-300 overflow-hidden"
                   placeholder="在此输入 Markdown 内容..."
                   spellCheck={false}
                 />
@@ -326,11 +337,28 @@ const Editor: React.FC<EditorProps> = ({ id }) => {
 
             {/* Right: Preview */}
             {(viewMode === 'preview' || viewMode === 'split') && (
-              <div className={`h-full overflow-y-auto bg-white ${viewMode === 'split' ? 'w-1/2' : 'w-full'}`}>
-                 <div className="p-8 md:p-12 prose prose-stone max-w-none prose-headings:font-serif prose-a:text-primary">
+              <div className={`overflow-y-auto bg-white ${viewMode === 'split' ? 'lg:w-1/2' : 'w-full'}`}>
+                 <div className="p-8 md:p-12 prose prose-stone max-w-none markdown dark:bg-black bg-white">
                     <h1 className="font-serif font-bold text-4xl mb-6">{title || "文章预览"}</h1>
                     {coverImage && <img src={coverImage} alt="Cover" className="w-full rounded-xl mb-8" />}
-                    <ReactMarkdown>{content}</ReactMarkdown>
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeHighlight]}      
+                      components={{
+                        pre({ node, className, children, ...props }) {
+                          return (
+                            <pre
+                              className={`${className ? className : ""} rounded-md p-4`}
+                              {...props}
+                            >
+                              {children}
+                            </pre>
+                          );
+                        }
+                      }}
+                    >
+                      {content}
+                    </Markdown>
                  </div>
               </div>
             )}

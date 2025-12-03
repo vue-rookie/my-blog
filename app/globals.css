@@ -1,5 +1,32 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+/* Highlight.js 高亮样式 */
+@import "highlight.js/styles/github.css";       /* 亮色 */
+@import "highlight.js/styles/github-dark.css";     /* 暗色 */
 
+.hljs{
+  background: none !important;
+}
+
+/* Markdown 样式（类似 prose，兼容 Tailwind v4） */
+.markdown h1 { font-size: 2rem; font-weight: bold; margin-top: 1.5em; margin-bottom: 0.5em; }
+.markdown h2 { font-size: 1.6rem; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.5em; }
+.markdown h3 { font-size: 1.4rem; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
+.markdown p { margin: 0.8em 0; line-height: 1.75; }
+.markdown a { color: #3b82f6; text-decoration: underline; cursor: pointer;display: inline-block; }
+.markdown a:hover { color: #1d4ed8; }
+.markdown ul, .markdown ol { padding-left: 1.5em; margin: 0.5em 0; }
+.markdown pre { border-radius: 0.5rem; padding: 1em; overflow-x: auto; }
+.markdown code { font-family: "Fira Code", monospace;  padding: 0.2em 0.4em; border-radius: 0.3em; }
+
+/* 支持暗黑模式 */
+@media (prefers-color-scheme: dark) {
+  .markdown { color: #e5e7eb; }
+  .markdown code { background: #1f2937; color: #f9fafb; }
+  .markdown pre { background: #111827; }
+  .mprosearkdown a { color: #60a5fa; }
+  .markdown a:hover { color: #93c5fd; }
+}
 @theme {
   --color-primary: #DA7756;
   --color-secondary: #5E5E5E;
