@@ -34,6 +34,26 @@ const Home: React.FC = () => {
     return Math.ceil(words / 400); // Approximation for Chinese reading speed
   };
 
+  // 去除 Markdown 格式，只保留纯文本
+  const stripMarkdown = (text: string) => {
+    return text
+      .replace(/#{1,6}\s?/g, '') // 标题
+      .replace(/\*\*(.+?)\*\*/g, '$1') // 粗体 **text**
+      .replace(/\*(.+?)\*/g, '$1') // 斜体 *text*
+      .replace(/__(.+?)__/g, '$1') // 粗体 __text__
+      .replace(/_(.+?)_/g, '$1') // 斜体 _text_
+      .replace(/~~(.+?)~~/g, '$1') // 删除线
+      .replace(/`{3}[\s\S]*?`{3}/g, '') // 代码块
+      .replace(/`(.+?)`/g, '$1') // 行内代码
+      .replace(/\[(.+?)\]\(.+?\)/g, '$1') // 链接
+      .replace(/!\[.*?\]\(.+?\)/g, '') // 图片
+      .replace(/>\s?/g, '') // 引用
+      .replace(/[-*+]\s/g, '') // 无序列表
+      .replace(/\d+\.\s/g, '') // 有序列表
+      .replace(/\n+/g, ' ') // 换行转空格
+      .trim();
+  };
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -140,7 +160,7 @@ const Home: React.FC = () => {
                            </h2>
 
                            <p className="text-textMuted text-base leading-relaxed line-clamp-2">
-                             {post.excerpt}
+                             {stripMarkdown(post.excerpt)}
                            </p>
 
                            <div className="flex items-center gap-4 text-textMuted group-hover:text-primary/80 transition-colors pt-2">

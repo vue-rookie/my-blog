@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { format } from 'date-fns';
-import { Heart, MessageCircle, Share2, Bot, Trash2, ArrowLeft, Clock, Edit } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bot, Trash2, ArrowLeft, Clock, Edit, Copy, Check } from 'lucide-react';
 import { getPostById, toggleLike, addComment, deletePost } from '@/src/services/storageService';
 import { generateSummary } from '@/src/services/geminiService';
 import { Post } from '@/src/types';
@@ -134,7 +134,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
       )}
 
       {/* Main Content Card - Paper Style */}
-      <div className="bg-surface rounded-none md:rounded-3xl p-0 md:p-12 md:shadow-card md:border md:border-stone-100">
+      <div className="rounded-none md:rounded-3xl px-4 py-6   md:border md:border-stone-100">
 
         {/* Actions Bar */}
         {isAdmin && (
@@ -174,19 +174,16 @@ const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
         )}
 
         {/* Markdown Content */}
-        <div className=" prose max-w-none markdown  dark:bg-black bg-white">
-          <Markdown remarkPlugins={[remarkGfm]}   rehypePlugins={[rehypeHighlight]}      components={{
-          pre({ node, className, children, ...props }) {
-            return (
-              <pre
-                className={`${className ? className : ""} rounded-md p-4`}
-                {...props}
-              >
-                {children}
-              </pre>
-            );
-          }
-        }}>
+        <div className="prose max-w-none markdown ">
+          <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={{
+            pre({ node, className, children, ...props }) {
+              return (
+                <CodeBlock className={className} {...props}>
+                  {children}
+                </CodeBlock>
+              );
+            }
+          }}>
             {post.content}
           </Markdown>
         </div>
@@ -279,5 +276,44 @@ const SparklesIcon = () => (
     <path d="M12 2L14.39 9.66L22 12L14.39 14.34L12 22L9.61 14.34L2 12L9.61 9.66L12 2Z" fill="currentColor"/>
   </svg>
 );
+
+const CodeBlock: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children, className, ...props }) => {
+  const [copied, setCopied] = useState(false);
+
+  const getCodeText = (node: React.ReactNode): string => {
+    if (typeof node === 'string') return node;
+    if (Array.isArray(node)) return node.map(getCodeText).join('');
+    if (React.isValidElement(node) && node.props.children) {
+      return getCodeText(node.props.children);
+    }
+    return '';
+  };
+
+  const handleCopy = async () => {
+    const codeText = getCodeText(children);
+    try {
+      await navigator.clipboard.writeText(codeText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  return (
+    <div className="relative group">
+      <pre className={`${className ? className : ""} rounded-md p-4`} {...props}>
+        {children}
+      </pre>
+      <button
+        onClick={handleCopy}
+        className="absolute top-2 right-2 p-2 rounded-md bg-stone-700/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-stone-600"
+        title={copied ? '已复制' : '复制代码'}
+      >
+        {copied ? <Check size={16} /> : <Copy size={16} />}
+      </button>
+    </div>
+  );
+};
 
 export default PostDetail;
