@@ -283,8 +283,11 @@ const CodeBlock: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children, c
   const getCodeText = (node: React.ReactNode): string => {
     if (typeof node === 'string') return node;
     if (Array.isArray(node)) return node.map(getCodeText).join('');
-    if (React.isValidElement(node) && node.props.children) {
-      return getCodeText(node.props.children);
+    if (React.isValidElement(node)) {
+      const props = node.props as { children?: React.ReactNode };
+      if (props.children) {
+        return getCodeText(props.children);
+      }
     }
     return '';
   };
