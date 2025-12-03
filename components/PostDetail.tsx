@@ -198,10 +198,10 @@ const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
               <Heart size={18} fill={hasLiked ? "currentColor" : "none"} className={hasLiked ? "animate-bounce" : ""} />
               <span className="font-bold text-sm">{post.likes}</span>
             </button>
-            <button className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-background hover:bg-stone-100 text-textMuted border border-stone-200 transition-all text-sm">
+            {/* <button className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-background hover:bg-stone-100 text-textMuted border border-stone-200 transition-all text-sm">
                <Share2 size={18} />
                <span className="font-medium">分享</span>
-            </button>
+            </button> */}
           </div>
           <div className="flex gap-2 flex-wrap justify-center">
              {post.tags.map(tag => (
