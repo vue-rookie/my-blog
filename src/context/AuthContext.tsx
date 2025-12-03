@@ -16,14 +16,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = (password: string) => {
-    // Simple client-side gate. In a real app, use a backend.
-    if (password === 'nebula') {
-      setIsAdmin(true);
-      sessionStorage.setItem('nebula_admin', 'true');
-      return true;
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/blog/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsAdmin(true);
+        sessionStorage.setItem('nebula_admin', 'true');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('登录请求失败:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {

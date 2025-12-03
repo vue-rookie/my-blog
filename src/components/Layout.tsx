@@ -13,18 +13,24 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const isActive = (path: string) => pathname === path;
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(passwordInput)) {
+    setLoading(true);
+    setError(false);
+
+    const success = await login(passwordInput);
+
+    if (success) {
       setShowLoginModal(false);
       setPasswordInput('');
-      setError(false);
     } else {
       setError(true);
     }
+    setLoading(false);
   };
 
   return (
@@ -93,9 +99,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 <div>
-                   <input 
-                     type="password" 
-                     placeholder="输入密码 (试一下 'nebula')"
+                   <input
+                     type="password"
+                     placeholder="请输入管理员密码"
                      className={`w-full px-4 py-3 rounded-lg bg-background border ${error ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'} outline-none transition-all text-sm`}
                      value={passwordInput}
                      onChange={(e) => {
@@ -103,14 +109,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                        setError(false);
                      }}
                      autoFocus
+                     disabled={loading}
                    />
                    {error && <p className="text-xs text-red-500 mt-1 ml-1">密码错误</p>}
                 </div>
-                <button 
-                  type="submit" 
-                  className="w-full py-3 rounded-lg bg-primary text-white font-medium hover:bg-accent transition-all shadow-sm"
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-lg bg-primary text-white font-medium hover:bg-accent transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading}
                 >
-                  解锁
+                  {loading ? '验证中...' : '解锁'}
                 </button>
               </form>
             </motion.div>

@@ -33,6 +33,6 @@ export interface AIResponse {
 
 export interface AuthContextType {
   isAdmin: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
 }
