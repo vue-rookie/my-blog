@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Markdown from 'react-markdown';
@@ -20,6 +20,7 @@ interface PostDetailProps {
 
 const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [post, setPost] = useState<Post | undefined>(undefined);
   const [commentText, setCommentText] = useState('');
   const [commentAuthor, setCommentAuthor] = useState('');
@@ -27,6 +28,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
   const [loadingAi, setLoadingAi] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
   const { isAdmin } = useAuth();
+  const showBack = searchParams.get('showBack') !== 'false';
 
   useEffect(() => {
     if (id) {
@@ -100,34 +102,40 @@ const PostDetail: React.FC<PostDetailProps> = ({ id }) => {
       exit={{ opacity: 0, y: -10 }}
       className="max-w-3xl mx-auto"
     >
-      <Link href="/" className="inline-flex items-center gap-2 text-textMuted hover:text-primary mb-8 transition-colors text-sm font-medium">
-        <ArrowLeft size={16} /> 返回首页
-      </Link>
+      {showBack && (
+        <Link href="/" className="inline-flex items-center gap-2 text-textMuted hover:text-primary mb-8 transition-colors text-sm font-medium">
+          <ArrowLeft size={16} /> 返回首页
+        </Link>
+      )}
 
       {/* Article Header */}
-      <header className="mb-10 text-center">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="px-3 py-1 rounded-md bg-stone-200/50 text-textMuted text-xs font-bold tracking-wide uppercase">
-            {post.category}
-          </span>
-          <span className="text-textMuted text-xs font-medium flex items-center gap-1">
-             <Clock size={12} /> {getReadingTime(post.content)} 分钟阅读
-          </span>
-        </div>
-        <h1 className="text-3xl md:text-5xl font-serif font-bold mb-6 leading-tight text-textMain">
-          {post.title}
-        </h1>
-        <div className="flex items-center justify-center gap-2 text-textMuted text-sm">
-           <span className="font-medium text-primary">{post.author}</span>
-           <span>•</span>
-           <span>{format(new Date(post.createdAt), 'yyyy年MM月dd日')}</span>
-           <span>•</span>
-           <span>{post.views} 阅读</span>
-        </div>
-      </header>
+      
+        <header className="mb-10 text-center">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <span className="px-3 py-1 rounded-md bg-stone-200/50 text-textMuted text-xs font-bold tracking-wide uppercase">
+              {post.category}
+            </span>
+            <span className="text-textMuted text-xs font-medium flex items-center gap-1">
+              <Clock size={12} /> {getReadingTime(post.content)} 分钟阅读
+            </span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-serif font-bold mb-6 leading-tight text-textMain">
+            {post.title}
+          </h1>
+          {showBack && 
+          <div className="flex items-center justify-center gap-2 text-textMuted text-sm">
+            <span className="font-medium text-primary">{post.author}</span>
+            <span>•</span>
+            <span>{format(new Date(post.createdAt), 'yyyy年MM月dd日')}</span>
+            <span>•</span>
+            <span>{post.views} 阅读</span>
+          </div>
+            }
+        </header>
+    
 
       {/* Cover Image */}
-      {post.coverImage && (
+      {post.coverImage && showBack  && (
         <div className="mb-10 rounded-2xl overflow-hidden shadow-warm">
            <img src={post.coverImage} alt={post.title} className="w-full max-h-[400px] object-cover" />
         </div>
